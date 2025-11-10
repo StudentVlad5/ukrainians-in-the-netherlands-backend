@@ -4,7 +4,7 @@ import User from "../models/user.model.js";
 
 const JWT_SECRET = process.env.JWT_SECRET || "supersecretjwt";
 
-// 🔹 Реєстрація
+// Реєстрація
 export const register = async (req, res) => {
   try {
     const { email, password, phone } = req.body;
@@ -30,7 +30,7 @@ export const register = async (req, res) => {
   }
 };
 
-// 🔹 Логін
+//  Логін
 export const login = async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -49,7 +49,7 @@ export const login = async (req, res) => {
   }
 };
 
-// 🔹 Профіль
+// Профіль
 export const getProfile = async (req, res) => {
   try {
     const user = await User.findById(req.user.id).select("-password");

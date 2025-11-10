@@ -8,7 +8,7 @@ const UserSchema = new Schema({
   emailVerified: { type: Boolean, default: false },
   phoneVerified: { type: Boolean, default: false },
   role: { type: String, enum: ["user", "seller", "admin"], default: "user" },
-  locale: { type: String, enum: ["ua", "nl", "de"], default: "ua" },
+  locale: { type: String, enum: ["ua", "nl", "de", "en"], default: "ua" },
   createdAt: { type: Date, default: Date.now },
 });
 
