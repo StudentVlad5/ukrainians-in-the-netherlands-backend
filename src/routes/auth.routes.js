@@ -1,5 +1,5 @@
 import express from "express";
-import { register, login, getProfile } from "../controllers/auth.controller.js";
+import { register, login, logout } from "../controllers/auth.controller.js";
 import { verifyToken } from "../middlewares/auth.middleware.js";
 
 const router = express.Router();
@@ -10,7 +10,7 @@ router.post("/register", register);
 // POST /api/auth/login
 router.post("/login", login);
 
-// GET /api/auth/profile
-router.get("/profile", verifyToken, getProfile);
+// POST /api/auth/logout
+router.post("/logout", verifyToken, logout);
 
 export default router;
