@@ -9,7 +9,15 @@ const formatsLogger = status === "development" ? "dev" : "short";
 const app = express();
 
 app.use(logger(formatsLogger));
-app.use(cors({ origin: process.env.CLIENT_URL, credentials: true }));
+app.use(
+  cors({
+    origin: [
+      process.env.CLIENT_URL,
+      "https://ukrainians-in-the-netherlands-front.vercel.app/",
+    ],
+    credentials: true,
+  })
+);
 app.use(express.json());
 
 app.get("/", (_, res) => res.send("API is running"));
