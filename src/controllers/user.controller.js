@@ -1,6 +1,5 @@
 import User from "../models/user.model.js";
 
-// Контролер для GET /api/profile/me
 export async function getMyProfile(req, res) {
   // req.user.id додається вашим authMiddleware після перевірки JWT
   const user = await User.findById(req.user.id).select("-password"); // Знову '-password'

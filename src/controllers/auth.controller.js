@@ -2,7 +2,7 @@ import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import User from "../models/user.model.js";
 
-const JWT_SECRET = process.env.JWT_SECRET || "supersecretjwt";
+const JWT_SECRET = process.env.SECRET_KEY || "supersecretjwt";
 
 // Реєстрація
 export const register = async (req, res) => {
@@ -34,18 +34,36 @@ export const register = async (req, res) => {
 export const login = async (req, res) => {
   try {
     const { email, password } = req.body;
-    const user = await User.findOne({ email });
-    if (!user) return res.status(404).json({ message: "User not found" });
-
-    const valid = await bcrypt.compare(password, user.password);
-    if (!valid) return res.status(401).json({ message: "Invalid credentials" });
-
+    if (!email || !password) {
+      return res
+        .status(400)
+        .json({ message: "Email та пароль є обов'язковими" });
+    }
+    const user = await User.findOne({ email }).select("+password");
+    if (!user) {
+      return res.status(401).json({ message: "Неправильний email або пароль" });
+    }
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) {
+      return res.status(401).json({ message: "Неправильний email або пароль" });
+    }
     const token = jwt.sign({ id: user._id, role: user.role }, JWT_SECRET, {
-      expiresIn: "7d",
+      expiresIn: "1d",
     });
-    res.json({ token, user: { email: user.email, role: user.role } });
-  } catch (err) {
-    res.status(500).json({ message: "Login error", error: err.message });
+    user.password = undefined;
+    res.status(200).json({
+      token,
+      user: {
+        email: user.email,
+        role: user.role,
+      },
+    });
+  } catch (error) {
+    console.error("Login error:", error);
+    res.status(500).json({
+      message: "Помилка сервера під час входу",
+      error: error.message,
+    });
   }
 };
 
