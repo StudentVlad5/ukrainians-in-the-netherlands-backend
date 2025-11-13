@@ -1,5 +1,3 @@
-// index.js (повна заміна)
-
 import dotenv from "dotenv";
 import express from "express";
 import cors from "cors";
@@ -10,51 +8,45 @@ import profileRouter from "./routes/profile.routes.js";
 
 dotenv.config();
 
-// --- 1. Налаштування Express (те, що було в app.js) ---
+// --- Express ---
 const app = express();
 const status = process.env.STATUS || "development";
-const formatsLogger = status === "development" ? "dev" : "short";
-
-app.use(logger(formatsLogger));
+app.use(logger(status === "development" ? "dev" : "short"));
 app.use(cors());
-app.use((req, res, next) => {
-  res.header("Access-Control-Allow-Origin", "*");
-  res.header("Access-Control-Allow-Headers", "*");
-  next();
-});
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
-// --- 2. Ваші API-роути ---
-// Vercel направить сюди запити /api/...
+// --- API Routes ---
 app.use("/api/auth", authRoutes);
 app.use("/api/profile", profileRouter);
-
-// --- 3. Обробка 404 (Виправлена) ---
-// Цей обробник відловить всі запити, що починаються з /api
-// і не були оброблені роутами вище.
 app.use("/api", (req, res) => {
   console.log("!!!!! 404 Handler for API route !!!!!!");
-  res.status(404);
-  res.json({ messages: "API route not found" });
+  res.status(404).json({ messages: "API route not found" });
 });
 
-// --- 4. Підключення до Бази Даних ---
-const mongoUri = process.env.MONGODB_URI;
+// --- MongoDB Connection ---
+let cached = global.mongoose;
+if (!cached) cached = global.mongoose = { conn: null, promise: null };
 
-if (!mongoUri) {
-  console.error("Помилка: MONGODB_URI не визначено в .env файлі");
-  // Це зупинить виконання, і Vercel покаже 500
-  process.exit(1);
+async function connectDB() {
+  if (cached.conn) return cached.conn;
+  if (!cached.promise) {
+    cached.promise = mongoose
+      .connect(process.env.MONGODB_URI)
+      .then((mongoose) => mongoose);
+  }
+  cached.conn = await cached.promise;
+  return cached.conn;
 }
 
-// Підключаємося до БД. Vercel буде кешувати це з'єднання.
-mongoose
-  .connect(mongoUri)
-  .then(() => console.log("✅ MongoDB Connected"))
-  .catch((err) => console.error("❌ MongoDB connection error:", err));
+// --- Serverless Handler для Vercel ---
+export default async function handler(req, res) {
+  await connectDB(); // підключаємо DB
+  app(req, res); // Express обробляє запит
+}
 
-// --- 5. Експорт для Vercel ---
-// НЕ ВИКОРИСТОВУЙТЕ app.listen()
-// Це найголовніший рядок для Vercel.
-export default app;
+if (process.env.VERCEL !== "1") {
+  const PORT = process.env.PORT || 4000;
+  await connectDB();
+  app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
+}
