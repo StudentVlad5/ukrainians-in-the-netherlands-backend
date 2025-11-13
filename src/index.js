@@ -12,7 +12,14 @@ dotenv.config();
 const app = express();
 const status = process.env.STATUS || "development";
 app.use(logger(status === "development" ? "dev" : "short"));
-app.use(cors());
+const corsOptions = {
+  origin: "*", // або список фронтенд доменів
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"],
+  credentials: true,
+};
+
+app.use(cors(corsOptions));
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
