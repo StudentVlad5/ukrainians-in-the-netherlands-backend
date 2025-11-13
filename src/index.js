@@ -13,13 +13,17 @@ const app = express();
 const status = process.env.STATUS || "development";
 app.use(logger(status === "development" ? "dev" : "short"));
 const corsOptions = {
-  origin: "*", // або список фронтенд доменів
+  origin: [
+    "http://localhost:3000",
+    "https://ukrainians-in-the-netherlands-front.vercel.app",
+  ],
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
   allowedHeaders: ["Content-Type", "Authorization"],
   credentials: true,
 };
 
 app.use(cors(corsOptions));
+app.options("*", cors(corsOptions)); // !!! обробка preflight
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
