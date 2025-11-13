@@ -10,7 +10,7 @@ import profileRouter from "./routes/profile.routes.js";
 
 dotenv.config();
 
-// --- 1. Налаштування Express ---
+// --- 1. Налаштування Express (те, що було в app.js) ---
 const app = express();
 const status = process.env.STATUS || "development";
 const formatsLogger = status === "development" ? "dev" : "short";
@@ -26,11 +26,13 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
 // --- 2. Ваші API-роути ---
-// (vercel.json направить сюди всі запити /api/...)
+// Vercel направить сюди запити /api/...
 app.use("/api/auth", authRoutes);
 app.use("/api/profile", profileRouter);
 
-// --- 3. Обробка 404 (тільки для /api) ---
+// --- 3. Обробка 404 (Виправлена) ---
+// Цей обробник відловить всі запити, що починаються з /api
+// і не були оброблені роутами вище.
 app.use("/api", (req, res) => {
   console.log("!!!!! 404 Handler for API route !!!!!!");
   res.status(404);
@@ -42,10 +44,11 @@ const mongoUri = process.env.MONGODB_URI;
 
 if (!mongoUri) {
   console.error("Помилка: MONGODB_URI не визначено в .env файлі");
+  // Це зупинить виконання, і Vercel покаже 500
   process.exit(1);
 }
 
-// Підключаємося до БД. Vercel буде "кешувати" це підключення.
+// Підключаємося до БД. Vercel буде кешувати це з'єднання.
 mongoose
   .connect(mongoUri)
   .then(() => console.log("✅ MongoDB Connected"))
@@ -53,5 +56,5 @@ mongoose
 
 // --- 5. Експорт для Vercel ---
 // НЕ ВИКОРИСТОВУЙТЕ app.listen()
-// Просто експортуйте 'app'. Vercel сам про все подбає.
+// Це найголовніший рядок для Vercel.
 export default app;
