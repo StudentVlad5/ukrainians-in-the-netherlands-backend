@@ -23,7 +23,7 @@ const corsOptions = {
 };
 
 app.use(cors(corsOptions));
-app.options("*", cors(corsOptions)); // !!! обробка preflight
+
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
@@ -50,14 +50,33 @@ async function connectDB() {
   return cached.conn;
 }
 
-// --- Serverless Handler для Vercel ---
-export default async function handler(req, res) {
-  await connectDB(); // підключаємо DB
-  app(req, res); // Express обробляє запит
-}
+app.use(async (req, res, next) => {
+  try {
+    await connectDB();
+    next();
+  } catch (error) {
+    console.error("DB Connection Middleware Error:", error);
+    res.status(500).json({ message: "Database connection failed" });
+  }
+});
 
+// 2. Для локальної розробки (коли ми НЕ на Vercel)
 if (process.env.VERCEL !== "1") {
   const PORT = process.env.PORT || 4000;
-  await connectDB();
-  app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
+  // Ми запускаємо `connectDB` один раз при старті
+  connectDB()
+    .then(() => {
+      app.listen(PORT, () => {
+        console.log(
+          `✅ DB connected. 🚀 Server running on http://localhost:${PORT}`
+        );
+      });
+    })
+    .catch((err) => {
+      console.error("Failed to start local server:", err);
+    });
 }
+
+// 3. Експортуємо сам 'app' для Vercel.
+//    Vercel сам оберне це в правильний serverless handler.
+export default app;
