@@ -15,13 +15,14 @@ const storage = new CloudinaryStorage({
   cloudinary: cloudinary.v2,
   params: {
     folder: "ukrainians_users",
-    resource_type: "auto",
+    resource_type: "image",
+    format: "webp",
     allowedFormats: ["jpg", "png", "jpeg", "webp", "gif"],
   },
-  filename: (req, res, cb) => {
-    cb(null, res.originalname);
+  filename: (req, file, cb) => {
+    cb(null, file.originalname);
   },
-  transformation: [{ width: 200, height: 200, crop: "limit" }],
+  transformation: [{ width: 400, crop: "limit" }, { quality: "auto:good" }],
 });
 
 const uploadCloud = multer({ storage });
