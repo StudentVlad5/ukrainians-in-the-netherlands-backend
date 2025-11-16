@@ -1,6 +1,6 @@
 import express from "express";
-import uploadCloud from "../middlewares/uploadMiddleware";
-import { auth, requireRole } from "../middlewares/auth.middleware";
+import uploadCloud from "../middlewares/uploadMiddleware.js";
+import { verifyToken, requireRole } from "../middlewares/auth.middleware.js";
 
 import {
   createProduct,
@@ -15,24 +15,34 @@ const router = express.Router();
 
 router.post(
   "/",
-  auth,
-  requireRole(["Saler", "Admin"]),
+  verifyToken,
+  requireRole(["seller", "admin"]),
   uploadCloud.array("images", 3),
   createProduct
 );
 
 router.get("/", getProducts);
-router.get("/stats", auth, requireRole(["Saler", "Admin"]), getProductsStats);
+router.get(
+  "/stats",
+  verifyToken,
+  requireRole(["seller", "admin"]),
+  getProductsStats
+);
 router.get("/:id", getProductById);
 
 router.put(
   "/:id",
-  auth,
-  requireRole(["Saler", "Admin"]),
+  verifyToken,
+  requireRole(["seller", "admin"]),
   uploadCloud.array("images", 3),
   updateProduct
 );
 
-router.delete("/:id", auth, requireRole(["Saler", "Admin"]), deleteProduct);
+router.delete(
+  "/:id",
+  verifyToken,
+  requireRole(["seller", "admin"]),
+  deleteProduct
+);
 
 export default router;

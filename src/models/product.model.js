@@ -1,4 +1,4 @@
-const mongoose = require("mongoose");
+import mongoose from "mongoose";
 const { Schema } = mongoose;
 
 // Схема для перекладних рядків
@@ -34,17 +34,17 @@ const ProductSchema = new Schema(
     },
 
     category: {
-      type: String, // Можна замінити на ObjectId, якщо є модель Category
+      type: String,
       required: true,
     },
 
     tags: {
-      type: [String],
-      default: [],
+      type: String,
+      default: "",
     },
 
     images: {
-      type: [String], // URL фотографій
+      type: [String],
       validate: [(val) => val.length <= 3, "Можна завантажити максимум 3 фото"],
     },
 
@@ -72,7 +72,7 @@ const ProductSchema = new Schema(
     },
   },
   {
-    timestamps: true, // createdAt + updatedAt
+    timestamps: true,
   }
 );
 
@@ -86,9 +86,8 @@ ProductSchema.index({
   "description.nl": "text",
   "description.de": "text",
   "description.en": "text",
-  tags: 1,
+  tags: "text",
   "location.city": 1,
 });
 
-// Експорт моделі
-module.exports = mongoose.model("Product", ProductSchema);
+export default mongoose.model("Product", ProductSchema);

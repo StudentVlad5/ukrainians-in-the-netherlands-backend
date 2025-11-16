@@ -1,4 +1,4 @@
-const mongoose = require("mongoose");
+import mongoose from "mongoose";
 const { Schema } = mongoose;
 
 // Схема перекладного тексту
@@ -89,5 +89,4 @@ ServiceSchema.index({
   "location.city": 1,
 });
 
-// Експорт моделі
-module.exports = mongoose.model("Service", ServiceSchema);
+export default mongoose.model("Service", ServiceSchema);

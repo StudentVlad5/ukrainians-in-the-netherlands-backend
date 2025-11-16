@@ -5,6 +5,7 @@ import logger from "morgan";
 import mongoose from "mongoose";
 import authRoutes from "./routes/auth.routes.js";
 import profileRouter from "./routes/profile.routes.js";
+import productsRouter from "./routes/products.routes.js";
 
 dotenv.config();
 
@@ -30,6 +31,7 @@ app.use(express.json());
 // --- API Routes ---
 app.use("/api/auth", authRoutes);
 app.use("/api/profile", profileRouter);
+app.use("/api/products", productsRouter);
 app.use("/api", (req, res) => {
   console.log("!!!!! 404 Handler for API route !!!!!!");
   res.status(404).json({ messages: "API route not found" });

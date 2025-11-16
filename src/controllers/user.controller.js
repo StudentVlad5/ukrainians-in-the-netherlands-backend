@@ -9,29 +9,36 @@ export async function getMyProfile(req, res) {
   res.status(200).json(user);
 }
 
-// Контролер для PUT /api/profile/me
 export async function updateMyProfile(req, res) {
-  // Забороняємо оновлювати email, role, password через цей маршрут
-  const { firstName, lastName, city, phone, contacts, locale } = req.body;
+  // Деструктуруємо всі можливі поля з req.body
+  const { firstName, lastName, city, phone, contacts, locale, role, status } =
+    req.body;
 
-  const fieldsToUpdate = {
-    firstName,
-    lastName,
-    city,
-    phone,
-    contacts,
-    locale,
-  };
+  const fieldsToUpdate = {};
 
-  // Тут також можна додати логіку для 'status', якщо користувач сам себе деактивує
-  if (req.body.status === "inactive") {
-    fieldsToUpdate.status = "inactive";
+  if (firstName !== undefined) fieldsToUpdate.firstName = firstName;
+  if (lastName !== undefined) fieldsToUpdate.lastName = lastName;
+  if (city !== undefined) fieldsToUpdate.city = city;
+  if (phone !== undefined) fieldsToUpdate.phone = phone;
+  if (locale !== undefined) fieldsToUpdate.locale = locale;
+  if (role !== undefined) fieldsToUpdate.role = role;
+  if (status !== undefined) fieldsToUpdate.status = status;
+  if (
+    typeof contacts === "object" &&
+    contacts !== null &&
+    !Array.isArray(contacts)
+  ) {
+    for (const key in contacts) {
+      if (Object.prototype.hasOwnProperty.call(contacts, key)) {
+        fieldsToUpdate[`contacts.${key}`] = contacts[key];
+      }
+    }
   }
 
   const user = await User.findByIdAndUpdate(
     req.user.id,
     { $set: fieldsToUpdate },
-    { new: true, runValidators: true } // 'new: true' - повернути оновлений документ
+    { new: true, runValidators: true }
   ).select("-password");
 
   res.status(200).json(user);
