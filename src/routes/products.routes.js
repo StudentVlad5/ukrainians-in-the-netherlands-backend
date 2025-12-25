@@ -1,5 +1,5 @@
 import express from "express";
-import uploadCloud from "../middlewares/uploadMiddleware.js";
+import { uploadGoods } from "../middlewares/uploadMiddleware.js";
 import { verifyToken, requireRole } from "../middlewares/auth.middleware.js";
 
 import {
@@ -17,7 +17,7 @@ router.post(
   "/",
   verifyToken,
   requireRole(["seller", "admin"]),
-  uploadCloud.array("images", 3),
+  uploadGoods.array("images", 3),
   createProduct
 );
 
@@ -34,7 +34,7 @@ router.put(
   "/:id",
   verifyToken,
   requireRole(["seller", "admin"]),
-  uploadCloud.array("images", 3),
+  uploadGoods.array("images", 3),
   updateProduct
 );
 

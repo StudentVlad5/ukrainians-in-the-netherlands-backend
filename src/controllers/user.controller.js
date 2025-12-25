@@ -45,7 +45,7 @@ export async function updateMyProfile(req, res) {
 }
 
 // Контролер для POST /api/profile/avatar
-export async function uploadAvatar(req, res) {
+export async function uplAvatar(req, res) {
   try {
     if (!req.file) {
       return res.status(400).json({ message: "Файл не надано." });
