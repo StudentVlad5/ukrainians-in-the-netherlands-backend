@@ -2,9 +2,17 @@ import Specialist from "../models/specialist.model.js";
 
 export const getPublicSpecialists = async (req, res) => {
   try {
-    const specialists = await Specialist.find({ isActive: true }).sort({
-      rating: -1,
-    }); // -1 для сортування від більшого до меншого
+    let specialists = [];
+    const limit = parseInt(req.query.limit);
+    if (limit) {
+      specialists = await Specialist.find({ isActive: true })
+        .sort({ rating: -1 })
+        .limit(limit);
+    } else {
+      specialists = await Specialist.find({ isActive: true }).sort({
+        rating: -1,
+      });
+    }
     res.json(specialists);
   } catch (error) {
     res.status(500).json({ message: error.message });
