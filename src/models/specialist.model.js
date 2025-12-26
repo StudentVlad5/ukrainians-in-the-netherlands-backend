@@ -35,6 +35,7 @@ const SpecialistSchema = new mongoose.Schema(
       min: 0,
       max: 5,
       default: 0,
+      index: true,
     },
 
     languages: {

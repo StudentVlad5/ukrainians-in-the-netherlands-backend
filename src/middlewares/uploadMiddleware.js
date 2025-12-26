@@ -45,7 +45,7 @@ export const uploadPortfolio = multer({
       resource_type: "image",
       allowed_formats: ["jpg", "jpeg", "png", "webp"],
       transformation: [
-        { width: 400, crop: "fit" },
+        { width: 800, crop: "fit" },
         { quality: "auto", fetch_format: "auto" },
       ],
     },
@@ -85,7 +85,7 @@ const storage = new CloudinaryStorage({
       return {
         folder: "specialists/portfolio",
         transformation: [
-          { width: 400, crop: "fit" },
+          { width: 800, crop: "fit" },
           { quality: "auto", fetch_format: "auto" },
         ],
       };
