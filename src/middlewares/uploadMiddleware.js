@@ -20,7 +20,7 @@ export const uploadAvatar = multer({
   storage: new CloudinaryStorage({
     cloudinary: cloudinary.v2,
     params: {
-      folder: "specialists/avatars",
+      folder: "users/avatars",
       resource_type: "image",
       allowed_formats: ["jpg", "jpeg", "png", "webp"],
       public_id: (req) => req.user.id,
@@ -73,7 +73,6 @@ const storage = new CloudinaryStorage({
     if (file.fieldname === "imageUrl") {
       return {
         folder: "specialists/avatars",
-        public_id: req.user.id,
         transformation: [
           { width: 400, height: 400, crop: "fill", gravity: "auto" },
           { quality: "auto", fetch_format: "auto" },
