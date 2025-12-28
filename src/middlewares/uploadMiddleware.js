@@ -67,6 +67,21 @@ export const uploadGoods = multer({
   }),
 });
 
+export const uploadNews = multer({
+  storage: new CloudinaryStorage({
+    cloudinary: cloudinary.v2,
+    params: {
+      folder: "news",
+      resource_type: "image",
+      allowed_formats: ["jpg", "jpeg", "png", "webp"],
+      transformation: [
+        { width: 800, crop: "fit" },
+        { quality: "auto", fetch_format: "auto" },
+      ],
+    },
+  }),
+});
+
 const storage = new CloudinaryStorage({
   cloudinary: cloudinary.v2,
   params: (req, file) => {
