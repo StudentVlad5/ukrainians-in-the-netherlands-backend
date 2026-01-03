@@ -39,11 +39,11 @@ export const getPublicProducts = async (req, res) => {
     let products = [];
     const limit = parseInt(req.query.limit);
     if (limit) {
-      products = await Product.find({ isActive: true })
+      products = await Product.find({ status: true })
         .sort({ rating: -1 })
         .limit(limit);
     } else {
-      products = await Product.find({ isActive: true }).sort({
+      products = await Product.find({ status: true }).sort({
         rating: -1,
       });
     }
