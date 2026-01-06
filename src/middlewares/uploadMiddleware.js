@@ -114,9 +114,40 @@ export const uploadSpecialistImages = multer({
   { name: "portfolio", maxCount: 10 },
 ]);
 
+// export const deleteFromCloudinary = async (url) => {
+//   if (!url) return;
+
+//   const publicId = url.split("/").pop().split(".")[0];
+//   await cloudinary.uploader.destroy(publicId);
+// };
 export const deleteFromCloudinary = async (url) => {
   if (!url) return;
 
-  const publicId = url.split("/").pop().split(".")[0];
-  await cloudinary.uploader.destroy(publicId);
+  try {
+    // приклад URL:
+    // https://res.cloudinary.com/xxx/image/upload/v123/events/abc.webp
+    const parts = url.split("/");
+    const fileWithExt = parts.pop(); // abc.webp
+    const folder = parts.pop(); // events
+    const publicId = `${folder}/${fileWithExt.split(".")[0]}`;
+
+    await cloudinary.v2.uploader.destroy(publicId);
+  } catch (err) {
+    console.error("Cloudinary delete error:", err.message);
+  }
 };
+
+export const uploadEvents = multer({
+  storage: new CloudinaryStorage({
+    cloudinary: cloudinary.v2,
+    params: {
+      folder: "events/",
+      resource_type: "image",
+      allowed_formats: ["jpg", "jpeg", "png", "webp"],
+      transformation: [
+        { width: 400, crop: "fit" },
+        { quality: "auto", fetch_format: "auto" },
+      ],
+    },
+  }),
+});

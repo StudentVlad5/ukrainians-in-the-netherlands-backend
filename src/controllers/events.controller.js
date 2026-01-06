@@ -45,19 +45,52 @@ export const getAllEvents = async (req, res) => {
 };
 
 // --- UPDATE ---
+// export const updateEventById = async (req, res) => {
+//   try {
+//     const { id } = req.params;
+//     const data = JSON.parse(req.body.data);
+
+//     let existingEvent = await Events.findById(id);
+//     if (!existingEvent)
+//       return res.status(404).json({ message: "Event not found" });
+
+//     // Якщо завантажено нові фото
+//     if (req.files && req.files.length > 0) {
+//       // Видаляємо старі фото з Cloudinary
+//       if (existingEvent.images && existingEvent.images.length > 0) {
+//         await Promise.all(
+//           existingEvent.images.map((img) => deleteFromCloudinary(img))
+//         );
+//       }
+//       data.images = req.files.map((file) => file.path);
+//     }
+
+//     const updatedEvent = await Events.findByIdAndUpdate(
+//       id,
+//       { $set: data },
+//       { new: true, runValidators: true }
+//     );
+
+//     res.json(updatedEvent);
+//   } catch (error) {
+//     res
+//       .status(500)
+//       .json({ message: "Error updating event", error: error.message });
+//   }
+// };
+
 export const updateEventById = async (req, res) => {
   try {
     const { id } = req.params;
     const data = JSON.parse(req.body.data);
 
-    let existingEvent = await Events.findById(id);
+    const existingEvent = await Events.findById(id);
     if (!existingEvent)
       return res.status(404).json({ message: "Event not found" });
 
-    // Якщо завантажено нові фото
+    // 🔥 якщо прийшли нові файли — ПОВНА ЗАМІНА
     if (req.files && req.files.length > 0) {
-      // Видаляємо старі фото з Cloudinary
-      if (existingEvent.images && existingEvent.images.length > 0) {
+      if (existingEvent.images?.length) {
         await Promise.all(
           existingEvent.images.map((img) => deleteFromCloudinary(img))
         );
@@ -73,24 +106,41 @@ export const updateEventById = async (req, res) => {
 
     res.json(updatedEvent);
   } catch (error) {
-    res
-      .status(500)
-      .json({ message: "Error updating event", error: error.message });
+    res.status(500).json({
+      message: "Error updating event",
+      error: error.message,
+    });
   }
 };
 
 // --- DELETE ---
+// export const deleteEventById = async (req, res) => {
+//   try {
+//     const event = await Events.findById(req.params.id);
+//     if (!event) return res.status(404).json({ message: "Not found" });
+
+//     // Видаляємо всі фото івенту з Cloudinary
+//     if (event.images && event.images.length > 0) {
+//       await Promise.all(event.images.map((img) => deleteFromCloudinary(img)));
+//     }
+
+//     await event.deleteOne();
+//     res.json({ message: "Deleted successfully" });
+//   } catch (error) {
+//     res.status(500).json({ message: "Error deleting event" });
+//   }
+// };
+
 export const deleteEventById = async (req, res) => {
   try {
     const event = await Events.findById(req.params.id);
     if (!event) return res.status(404).json({ message: "Not found" });
 
-    // Видаляємо всі фото івенту з Cloudinary
-    if (event.images && event.images.length > 0) {
+    if (event.images?.length) {
       await Promise.all(event.images.map((img) => deleteFromCloudinary(img)));
     }
 
-    await event.deleteOne();
+    await Events.findByIdAndDelete(req.params.id);
     res.json({ message: "Deleted successfully" });
   } catch (error) {
     res.status(500).json({ message: "Error deleting event" });
