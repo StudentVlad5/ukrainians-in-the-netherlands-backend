@@ -63,6 +63,7 @@ export const getPublicSpecialistById = async (req, res) => {
 };
 
 import Product from "../models/product.model.js";
+import { ActiveEvents } from "../models/activeEvents.model.js";
 
 export const getPublicProducts = async (req, res) => {
   try {
@@ -153,5 +154,169 @@ export const gePublicServices = async (req, res) => {
       message: "Помилка при отриманні списку сервісів",
       error: error.message,
     });
+  }
+};
+
+// ACTIVE EVENTS
+export const gePublicActiveEvents = async (req, res) => {
+  const { page = 1, limit = 10, search = "", filter = "all" } = req.query;
+  const skip = (page - 1) * limit;
+  const now = new Date();
+
+  try {
+    let matchQuery = {};
+
+    // 1. Фільтрація за статусом та часом
+    if (filter === "active") {
+      matchQuery.status = "active";
+      matchQuery.date = { $gte: now };
+    } else if (filter === "archived") {
+      matchQuery.$or = [{ status: "archived" }, { date: { $lt: now } }];
+    }
+
+    const pipeline = [
+      {
+        $lookup: {
+          from: "events", // назва колекції в БД
+          localField: "eventId",
+          foreignField: "_id",
+          as: "parentEvent",
+        },
+      },
+      { $unwind: "$parentEvent" },
+      {
+        $match: {
+          ...matchQuery,
+          // 2. Пошук по всіх мовах одночасно (Title та Description)
+          $or: [
+            { "parentEvent.title.uk": { $regex: search, $options: "i" } },
+            { "parentEvent.title.en": { $regex: search, $options: "i" } },
+            { "parentEvent.title.de": { $regex: search, $options: "i" } },
+            { "parentEvent.title.nl": { $regex: search, $options: "i" } },
+            { "parentEvent.description.uk": { $regex: search, $options: "i" } },
+            { "parentEvent.description.en": { $regex: search, $options: "i" } },
+            { "parentEvent.description.de": { $regex: search, $options: "i" } },
+            { "parentEvent.description.nl": { $regex: search, $options: "i" } },
+          ],
+        },
+      },
+      {
+        // 3. Передаємо повні об'єкти перекладів та масиви зображень
+        $project: {
+          _id: 1,
+          date: 1,
+          time: 1,
+          price: 1,
+          status: 1,
+          "parentEvent.title": 1, // Передасть { uk, en, de, nl }
+          "parentEvent.description": 1, // Передасть { uk, en, de, nl }
+          "parentEvent.images": 1, // Передає масив рядків
+          "parentEvent.category": 1,
+          "parentEvent.duration": 1,
+        },
+      },
+      { $sort: { date: 1 } },
+      { $skip: Number(skip) },
+      { $limit: Number(limit) },
+    ];
+
+    const data = await ActiveEvents.aggregate(pipeline);
+
+    const totalCountResult = await ActiveEvents.aggregate([
+      ...pipeline.slice(0, 3),
+      { $count: "count" },
+    ]);
+
+    const total = totalCountResult[0]?.count || 0;
+
+    res.json({
+      success: true,
+      data,
+      pagination: {
+        total,
+        page: Number(page),
+        limit: Number(limit),
+        totalPages: Math.ceil(total / limit),
+      },
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+// Контролер для отримання одного івенту за ID
+import mongoose from "mongoose"; // Переконайтеся, що цей імпорт є зверху файлу
+
+export const getPublicActiveEventById = async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    // Перевірка чи є ID валідним ObjectId перед запитом
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Invalid ID format" });
+    }
+
+    const data = await ActiveEvents.aggregate([
+      {
+        // ВИПРАВЛЕНО: передаємо id як рядок
+        $match: { _id: new mongoose.Types.ObjectId(id) },
+      },
+      {
+        $lookup: {
+          from: "events",
+          localField: "eventId",
+          foreignField: "_id",
+          as: "parentEvent",
+        },
+      },
+      { $unwind: "$parentEvent" },
+      {
+        $lookup: {
+          from: "specialists",
+          localField: "parentEvent.specialistId",
+          foreignField: "_id",
+          as: "specialist",
+        },
+      },
+      { $unwind: { path: "$specialist", preserveNullAndEmptyArrays: true } },
+      {
+        $project: {
+          _id: 1,
+          date: 1,
+          time: 1,
+          price: 1,
+          seats: 1,
+          booking: 1,
+          vacancies: { $subtract: ["$seats", "$booking"] },
+          location: 1,
+          type: 1,
+          status: 1,
+          "parentEvent.title": 1,
+          "parentEvent.description": 1,
+          "parentEvent.article_event": 1,
+          "parentEvent.images": 1,
+          "parentEvent.duration": 1,
+          "parentEvent.category": 1,
+          "specialist.name": 1,
+          "specialist.specialty": 1,
+          "specialist.imageUrl": 1,
+          "specialist.rating": 1,
+          "specialist.description": 1,
+        },
+      },
+    ]);
+
+    if (!data || data.length === 0) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Event not found" });
+    }
+
+    res.json({ success: true, data: data[0] });
+  } catch (error) {
+    console.error("Aggregation error:", error);
+    res.status(500).json({ success: false, message: error.message });
   }
 };
