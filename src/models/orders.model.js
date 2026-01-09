@@ -29,4 +29,4 @@ const ordersSchema = new Schema(
   { timestamps: true, versionKey: false }
 );
 
-export const Orders = model("Order", ordersSchema);
+export default mongoose.model("Order", ordersSchema);

@@ -299,6 +299,7 @@ export const getPublicActiveEventById = async (req, res) => {
           "parentEvent.images": 1,
           "parentEvent.duration": 1,
           "parentEvent.category": 1,
+          "parentEvent._id": 1,
           "specialist.name": 1,
           "specialist.specialty": 1,
           "specialist.imageUrl": 1,
