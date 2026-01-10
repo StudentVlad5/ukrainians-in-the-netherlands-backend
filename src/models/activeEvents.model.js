@@ -9,7 +9,17 @@ const ActiveEventsSchema = new Schema(
     time: { type: String, required: true }, // Наприклад "18:30"
     price: { type: Number, required: true, min: 0 },
     seats: { type: Number, required: true, min: 1 },
-    booking: { type: Number, default: 0 },
+    booking: {
+      type: Number,
+      default: 0,
+      min: 0,
+      validate: {
+        validator: function (v) {
+          return v <= this.seats;
+        },
+        message: "Booking cannot exceed total seats",
+      },
+    },
     vacancies: {
       type: Number,
       default: function () {
