@@ -8,6 +8,7 @@ import {
   gePublicServices,
   gePublicActiveEvents,
   getPublicActiveEventById,
+  getAllTestimonials,
 } from "../controllers/publicDetails.controller.js";
 
 const router = express.Router();
@@ -20,5 +21,6 @@ router.get("/products/:id", getPublicProductById);
 router.get("/services", gePublicServices);
 router.get("/active-events", gePublicActiveEvents);
 router.get("/active-events/:id", getPublicActiveEventById);
+router.get("/testimonials", getAllTestimonials);
 
 export default router;

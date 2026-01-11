@@ -1,4 +1,5 @@
 import Specialist from "../models/specialist.model.js";
+import Testimonial from "../models/testimonial.model.js";
 
 export const getPublicSpecialists = async (req, res) => {
   try {
@@ -260,7 +261,6 @@ export const getPublicActiveEventById = async (req, res) => {
 
     const data = await ActiveEvents.aggregate([
       {
-        // ВИПРАВЛЕНО: передаємо id як рядок
         $match: { _id: new mongoose.Types.ObjectId(id) },
       },
       {
@@ -319,5 +319,18 @@ export const getPublicActiveEventById = async (req, res) => {
   } catch (error) {
     console.error("Aggregation error:", error);
     res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+export const getAllTestimonials = async (req, res) => {
+  try {
+    const testimonials = await Testimonial.find().sort({ createdAt: -1 });
+    res.status(200).json(testimonials);
+  } catch (error) {
+    console.error("Деталі помилки:", error);
+    res.status(500).json({
+      message: "Помилка при отриманні відгуків",
+      error: error.message,
+    });
   }
 };

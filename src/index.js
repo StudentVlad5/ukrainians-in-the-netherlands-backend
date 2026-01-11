@@ -12,6 +12,7 @@ import eventsRouter from "./routes/events.routes.js";
 import activeEventsRouter from "./routes/activeEvents.routes.js";
 import categoriesRouter from "./routes/categories.routes.js";
 import ordersRouter from "./routes/orders.routers.js";
+import testimonialsRouter from "./routes/testimonial.routes.js";
 import publicsRouter from "./routes/publicDetails.routes.js";
 
 dotenv.config();
@@ -46,6 +47,7 @@ app.use("/api/news", newsRoutes);
 app.use("/api/events", eventsRouter);
 app.use("/api/active-events", activeEventsRouter);
 app.use("/api/orders", ordersRouter);
+app.use("/api/testimonials", testimonialsRouter);
 app.use("/api/categories", categoriesRouter);
 
 app.use("/api/public", publicsRouter);
